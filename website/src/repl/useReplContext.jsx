@@ -39,6 +39,7 @@ import './Repl.css';
 import { setInterval, clearInterval } from 'worker-timers';
 import { getMetadata } from '../metadata_parser';
 import { debugAudiograph } from './audiograph';
+import { registerStrudelMCP } from './caddrMcp.mjs';
 
 const { latestCode, maxPolyphony, audioDeviceName, multiChannelOrbits } = settingsMap.get();
 let modulesLoading, presets, drawContext, clearCanvas, audioReady;
@@ -139,8 +140,10 @@ export function useReplContext() {
       },
       bgFill: false,
     });
+    editorRef.current = editor;
     window.strudelMirror = editor;
     window.debugAudiograph = debugAudiograph;
+    registerStrudelMCP(() => editorRef.current);
 
     // init settings
     initCode().then(async (decoded) => {
@@ -161,8 +164,6 @@ export function useReplContext() {
       setDocumentTitle(code);
       logger(`Welcome to Strudel! ${msg} Press play or hit ctrl+enter to run it!`, 'highlight');
     });
-
-    editorRef.current = editor;
   }, []);
 
   const [replState, setReplState] = useState({});

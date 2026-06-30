@@ -1,8 +1,10 @@
 import { Bars3Icon, PlayIcon, StopIcon, XMarkIcon } from '@heroicons/react/16/solid';
 import cx from '@src/cx.mjs';
+import { $caddrMcpStatus, showCaddrMCPAuthorization } from '@src/repl/caddrMcp.mjs';
 import { StrudelIcon } from '@src/repl/components/icons/StrudelIcon';
 import { useSettings, setIsZen, setIsPanelOpened, setActiveFooter as setTab } from '../../../settings.mjs';
 import '../../Repl.css';
+import { useStore } from '@nanostores/react';
 import { useLogger } from '../useLogger';
 import { ConsoleTab } from './ConsoleTab';
 import ExportTab from './ExportTab';
@@ -161,7 +163,40 @@ function MainMenu({ context, isEmbedded = false, className }) {
           <span>learn</span>
         </a>
       )}
+      {!isEmbedded && <CaddrMCPStatusButton />}
     </div>
+  );
+}
+
+function CaddrMCPStatusButton() {
+  const status = useStore($caddrMcpStatus);
+  const isConnected = status.state === 'connected';
+  const color = {
+    idle: 'text-muted',
+    connecting: 'text-yellow-500',
+    authorization: 'text-yellow-500',
+    connected: 'text-green-500',
+    error: 'text-red-500',
+  }[status.state];
+
+  return (
+    <button
+      title={status.error || `Caddr-MCP ${status.state}`}
+      disabled={isConnected}
+      onClick={() => {
+        if (!isConnected) {
+          showCaddrMCPAuthorization();
+        }
+      }}
+      className={cx(
+        'flex items-center space-x-1 px-2',
+        color,
+        isConnected ? 'cursor-default' : 'cursor-pointer hover:opacity-50',
+      )}
+    >
+      <span aria-hidden="true" className="block h-2 w-2 rounded-full bg-current" />
+      <span>{status.label}</span>
+    </button>
   );
 }
 
